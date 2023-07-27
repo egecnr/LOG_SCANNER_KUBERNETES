@@ -1,3 +1,1 @@
 # LOG_SCANNER_KUBERNETES
-cd
-hihi
