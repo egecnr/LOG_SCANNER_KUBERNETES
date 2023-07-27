@@ -44,7 +44,7 @@ replicas: 1
 loadBalService: false
 
 ## name of image
-image: dbaudit-docker-local.bin.swisscom.com/oracle/database:19.3.0-ee
+image: container-registry.oracle.com/database/enterprise:19.3.0.0
 
 ## image pull policy, IfNotPresent or Always
 imagePullPolicy: Always

@@ -6,7 +6,6 @@ RUN apk update && \
     apk add --no-cache \
         curl \
         gcompat \
-        curl \
         python3 \
         libaio \
         wget \
