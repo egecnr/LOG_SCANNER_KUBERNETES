@@ -1,0 +1,176 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi
+  namespace: default
+  labels:
+    app: "fastapi"
+  annotations:
+    kubectl.kubernetes.io/default-container: not-opa-container
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+      - name: apicontainer
+        image: egedocker/fastapi-repo:latest
+        imagePullPolicy: Always
+        resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+        ports: 
+        - name: http
+          containerPort: 3000
+        env:
+        - name: PREFIX
+          value: /api
+      - name: opa
+        # There is really no need to ever run OPA as root, so the rootless
+        # container should be considered the default. Do note however that
+        # the default container is very slim - if you need to exec into the
+        # container or run normal UNIX tools for debugging, use the `-debug`
+        # suffix instead.
+        # NOTE: As part of the Docker Open Source Program, The OPA
+        # organization (including all sub-projects) Docker images are not
+        # subject to rate limiting.
+        image: docker.io/openpolicyagent/opa:0.54.0-debug
+        # Purely informational - we expose port 8181 for the OPA REST API,
+        # and 8282 for diagnostics (/health and /metrics). This separation
+        # allows us to expose the diagnostics endpoints without allowing
+        # external access to other OPA endpoints.
+        ports:
+          - name: opa
+            containerPort: 8181
+          - containerPort: 8282
+        # Start the OPA server with minimal configuration.
+        args: [
+          "run",
+          "--server",
+          # If sourcing policies or data from the file system, ignore
+          # any hidden files as these are most likely not meant to be
+          # read by OPA.
+          "--ignore=.*",
+          # Bind OPA only to localhost to ensure we avoid unecessary
+          # exposure of the OPA API outside of the pod. We can still
+          # reach the diagnostic endpoints from the config option below.
+          "--addr=:8181",
+          # Expose /health and /metrics endpoints on a separate port,
+          # allowing tools like Prometheus to scrape them without having
+          # access to other OPA endpoints.
+          "--diagnostic-addr=:8282",
+          # Logging at info level is essentially enabling access logging.
+          # While occasionally useful the decision log feature already offers
+          # a much richer logging system, and since info level is chatty it
+          # will likely make it more difficult to spot real problems and
+          # errors right away.
+          "--log-level=debug",
+          # Number of seconds to wait for graceful shutdown before terminating
+          # forcefully (default 10 seconds). Set somewhere close to the
+          # terminationGracePeriodSeconds value configured for the pod (which
+          # by default is 30 seconds).
+          "--shutdown-grace-period=25",
+          # If using external load balancers or ingress controllers such as
+          # nginx, give them time to register the removal of endpoints
+          # associated with pods shutting down or else there is a risk that
+          # traffic is directed to a service which is already shut down.
+          # For details, see https://github.com/open-policy-agent/opa/issues/2764
+          "--shutdown-wait-period=10",
+          # Set a limit of 128 mb for the inter query cache - the default is
+          # no limit at all, which may be undesirable if http.send is used
+          # frequently.
+          "--set=caching.inter_query_builtin_cache.max_size_bytes=128000000"
+          #
+          # OPTIONAL or experimental options
+          #
+          # "--h2c"
+          # Use h2c (i.e. HTTP2 without TLS). Note that few clients support
+          # this, and the benefits are not clear.
+          #
+          # --skip-version-check
+          # Skip reporting version. As this information is useful to the OPA
+          # project it is recommended to leave on. If you have very strict
+          # requirements around privacy, or you have egress traffic to the
+          # internet blocked skipping this could however be desired.
+          # See https://www.openpolicyagent.org/docs/latest/privacy/
+          #
+        ]
+        # Configure liveness and readiness probes. If downloading a large
+        # dataset as part of the bundle you may want to adjust the value of
+        # initialDelaySeconds accordingly. The default value of timeoutSeconds
+        # of 1 may also be increased somewhat - for any other settings the
+        # defaults are usually fine.
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8282
+            scheme: HTTP
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            # Make sure to include bundle loading as part of accepted
+            # readiness condition
+            path: /health?bundle=true
+            port: 8282
+            scheme: HTTP
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        # These values will obviously differ in most setups, but these
+        # provide a good baseline. When allocating resources for OPA
+        # one should take the following into account:
+        # * Memory - OPA itself requires something like 10-20Mi - the rest
+        # depends entirely on how much data OPA needs to keep in memory
+        # for it's internal in-memory data source (anything you can import
+        # in your policy like import data.xxx.yyy). A good rule of thumb is
+        # to check the size of the data serialized to JSON and multiply that
+        # by 20 to get an approximation of how much memory to allocate.
+        # * CPU - these numbers depends on so many factors, like hardware used,
+        # number of OPA instances, complexity of policy, and so on, that the
+        # only honest answer is "test and measure". The numbers below however
+        # probably a good starting point for that.
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "125m"
+          limits:
+            memory: "256Mi"
+            cpu: "700m"
+        # Optionally, use the kubernetes downward API to inject properties
+        # from the pod or container environment. The values for these can then
+        # be retrieved and used from inside rego policies using
+        # opa.runtime().env["ENV_VAR_NAME"]
+        env:
+          - name: APP_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['app']
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        # OPA (when run with the -rootless image tag) does not require any
+        # special privileges and does not write data to disk. We can thus
+        # apply the most strict securityContext available.
+        # securityContext:
+          # allowPrivilegeEscalation: false
+          # runAsNonRoot: true
+          # runAsUser: 12000
+          # runAsGroup: 12000
+          # readOnlyRootFilesystem: true
+          # capabilities:
+            # drop:
+              # - all

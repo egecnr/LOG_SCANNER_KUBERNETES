@@ -1,0 +1,7 @@
+/.git
+/venv
+/.venv
+/__pycache__
+/.idea
+/helm-charts
+/fastapi-k8s-deployment

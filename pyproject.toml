@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "dam-log-scanner"
+version = "0.1.0"
+description = "A dam log scanner that works with OPA"
+authors = ["Your Name <you@example.com>"]
+license = "Proprietary"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.100.0"
+uvicorn = "^0.23.1"
+pytz = "^2023.3"
+cx-Oracle = "^8.3.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
