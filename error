@@ -1,0 +1,1 @@
+opa_client.errors.RegoParseError: (400, {'code': 'invalid_parameter', 'message': 'error(s) occurred while compiling module(s)', 'errors': [{'code': 'rego_parse_error', 'message': 'unexpected { token: expected \n or ; or }', 'location': {'file': 'logon-failures', 'row': 12, 'col': 22}, 'details': {'line': '    allow_inspection {', 'idx': 21}}]})
