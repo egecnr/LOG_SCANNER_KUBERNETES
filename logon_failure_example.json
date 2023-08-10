@@ -1,0 +1,12 @@
+ {
+    "input": {
+        "event_timestamp": "09.08.2023 06:06:33",
+        "session_id": 641930246,
+        "dbusername": "SYSTEM",
+        "action_name": "LOGON",
+        "return_code": 1017,
+        "unified_audit_policies": "ORA_LOGON_FAILURES",
+        "userhost": "oracle-db-oracle-db-75df6d59f8-zchl5",
+        "number_of_attempts": 6
+    }
+}

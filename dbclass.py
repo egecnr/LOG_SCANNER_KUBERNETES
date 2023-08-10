@@ -30,8 +30,8 @@ class DbConnection:
             self.connectionDB = oracledb.connect(user= self.username, password= self.password, dsn=self.dsnInformation ,encoding="UTF-8")
             self.setLatestTime()
             self.cursor = self.connectionDB.cursor()
-            self.opaClient= OpaClient('10.42.0.101',8181,'v1')
-            #self.print(self.opaClient.check_connection())
+            self.opaClient= OpaClient('10.42.0.111',8181,'v1')
+            
 
 
     def getLogonFailures(self):
@@ -39,15 +39,10 @@ class DbConnection:
          cursor = self.connectionDB.cursor()
          query = """SELECT to_char(event_timestamp,'dd.mm.yyyy hh24:mi:ss') event_timestamp, sessionid, dbusername, action_name, return_code, unified_audit_policies, USERHOST FROM unified_audit_trail WHERE event_timestamp > TO_DATE('"""+  str(self.lastChecked) +"""','DD.MM.YY HH24:MI:SS') AND unified_audit_policies='ORA_LOGON_FAILURES'  ORDER BY event_timestamp"""
            # "SELECT to_char(event_timestamp,'dd.mm.yy hh24:mi:ss') event_timestamp, sessionid, dbusername, action_name, return_code, unified_audit_policies FROM unified_audit_trail WHERE event_timestamp > TO_DATE('13.07.2023 13:21:03','DD.MM.YY HH24:MI:SS') AND UNIFIED_AUDIT_POLICIES = 'SYSTEM_ALL_POLICIES' OR UNIFIED_AUDIT_POLICIES ='ORA_LOGON_FAILURES' ORDER BY event_timestamp
-         print(self.lastChecked)
-         print(query)
          cursor.execute(query)
          values = cursor.fetchall()
-         print(len(values))
          self.setLatestTime()
          self.filterLogonFailures(values)
-         
-         
          return values
     
 
@@ -63,18 +58,15 @@ class DbConnection:
               self.cursor.execute(query)
               number_of_attempts=self.cursor.fetchone()
               logon_failure= LogonFailure(v[0],v[1],v[2],v[3],v[4],v[5],v[6],number_of_attempts[0])
-              print("Here are the number of attempts: "+ str(number_of_attempts[0]))
-              jsonobject = json.dumps(logon_failure.__dict__, separators=(',', ':'))
-              formatted_json= jsonobject.replace(',', ',\n').replace('{', '{\n').replace('}', '\n}')
-              print(formatted_json)
-              self.enterPolicy(formatted_json)
+              print(logon_failure.to_json())
+              self.enterPolicy(logon_failure.to_json())
+         
               
 
     def enterPolicy(self,jsonvalue):
          self.opaClient.update_opa_policy_fromfile("policies/logon_failure.rego",endpoint="logon-failures")  
          print(self.opaClient.check_permission(input_data=jsonvalue,policy_name="logon-failures",rule_name="alert"))   
-         #self.opaClient.update_or_create_opa_data(jsonvalue,"login-failures/logindata")  
-         #print(self.opaClient.get_policies_list())  
+  
 
 
     def setLatestTime(self):
