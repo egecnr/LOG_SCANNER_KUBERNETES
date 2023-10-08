@@ -7,7 +7,7 @@ app.connection=""
 
 @app.get("/api")
 async def root():
-    app.connection= DbConnection("system","root","10.42.0.117:1521/ORCLCDB")
+    app.connection= DbConnection("system","root","10.42.0.177:1521/ORCLCDB")
     print('Connected to Db')
     return "Welcome to the Dam demo!!"
 
@@ -16,11 +16,6 @@ async def root():
 
 @app.get("/api/logon-failures")   
 async def GetLogonFailures():
-        print('Listening on database activity')
-        for x in range (3):
             response = app.connection.getLogonFailures() 
-            print("got the results")
-            print(response)
-            print("waiting for the next audit check")
-            time.sleep(30)
+            return response
     

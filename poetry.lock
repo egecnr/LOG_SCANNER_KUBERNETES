@@ -25,15 +25,20 @@ test = ["anyio", "coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "psutil (>=5.9)
 trio = ["trio (<0.22)"]
 
 [[package]]
-name = "cffi"
-version = "1.15.1"
-description = "Foreign Function Interface for Python calling C code."
+name = "certifi"
+version = "2022.12.7"
+description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 
-[package.dependencies]
-pycparser = "*"
+[[package]]
+name = "charset-normalizer"
+version = "3.2.0"
+description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
+category = "main"
+optional = false
+python-versions = ">=3.7.0"
 
 [[package]]
 name = "click"
@@ -53,27 +58,6 @@ description = "Cross-platform colored terminal text."
 category = "main"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
-
-[[package]]
-name = "cryptography"
-version = "41.0.2"
-description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.dependencies]
-cffi = ">=1.12"
-
-[package.extras]
-docs = ["sphinx (>=5.3.0)", "sphinx-rtd-theme (>=1.1.1)"]
-docstest = ["pyenchant (>=1.6.11)", "twine (>=1.12.0)", "sphinxcontrib-spelling (>=4.0.1)"]
-nox = ["nox"]
-pep8test = ["black", "ruff", "mypy", "check-sdist"]
-sdist = ["build"]
-ssh = ["bcrypt (>=3.1.5)"]
-test = ["pytest (>=6.2.0)", "pytest-benchmark", "pytest-cov", "pytest-xdist", "pretend"]
-test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "cx-oracle"
@@ -127,23 +111,19 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
-name = "oracledb"
-version = "1.3.2"
-description = "Python interface to Oracle Database"
+name = "opa-python-client"
+version = "1.3.4"
+description = "Client for connection to the OPA service"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-cryptography = ">=3.2.1"
-
-[[package]]
-name = "pycparser"
-version = "2.21"
-description = "C parser in Python"
-category = "main"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+certifi = ">=2022.5.18,<2023.0.0"
+requests = ">=2.27.1,<3.0.0"
+types-requests = ">=2.27.30,<3.0.0"
+urllib3 = ">=1.26.9,<2.0.0"
+user-agent = ">=0.1.10,<0.2.0"
 
 [[package]]
 name = "pydantic"
@@ -181,6 +161,32 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "requests"
+version = "2.31.0"
+description = "Python HTTP for Humans."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+certifi = ">=2017.4.17"
+charset-normalizer = ">=2,<4"
+idna = ">=2.5,<4"
+urllib3 = ">=1.21.1,<3"
+
+[package.extras]
+socks = ["PySocks (>=1.5.6,!=1.5.7)"]
+use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
+
+[[package]]
+name = "six"
+version = "1.16.0"
+description = "Python 2 and 3 compatibility utilities"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
 name = "sniffio"
 version = "1.3.0"
 description = "Sniff out which async library your code is running under"
@@ -203,12 +209,55 @@ anyio = ">=3.4.0,<5"
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyaml"]
 
 [[package]]
+name = "types-requests"
+version = "2.31.0.2"
+description = "Typing stubs for requests"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+types-urllib3 = "*"
+
+[[package]]
+name = "types-urllib3"
+version = "1.26.25.14"
+description = "Typing stubs for urllib3"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.7.1"
 description = "Backported and Experimental Type Hints for Python 3.7+"
 category = "main"
 optional = false
 python-versions = ">=3.7"
+
+[[package]]
+name = "urllib3"
+version = "1.26.16"
+description = "HTTP library with thread-safe connection pooling, file post, and more."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
+
+[package.extras]
+brotli = ["brotlicffi (>=0.8.0)", "brotli (>=1.0.9)", "brotlipy (>=0.6.0)"]
+secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "urllib3-secure-extra", "ipaddress"]
+socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
+
+[[package]]
+name = "user-agent"
+version = "0.1.10"
+description = "User-Agent generator"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = "*"
 
 [[package]]
 name = "uvicorn"
@@ -229,26 +278,31 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "06c93cda95902cc7c95f0c2dd3631e0df2f3d55bbb616bafe1fdb145f6a79c54"
+content-hash = "7a8c37b19b42af3efaa9f62bbd86dd6b4d9dabf696ae6dabe53e5d3bc986263a"
 
 [metadata.files]
 annotated-types = []
 anyio = []
-cffi = []
+certifi = []
+charset-normalizer = []
 click = []
 colorama = []
-cryptography = []
 cx-oracle = []
 exceptiongroup = []
 fastapi = []
 h11 = []
 idna = []
-oracledb = []
-pycparser = []
+opa-python-client = []
 pydantic = []
 pydantic-core = []
 pytz = []
+requests = []
+six = []
 sniffio = []
 starlette = []
+types-requests = []
+types-urllib3 = []
 typing-extensions = []
+urllib3 = []
+user-agent = []
 uvicorn = []

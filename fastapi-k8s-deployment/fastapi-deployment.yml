@@ -63,7 +63,7 @@ spec:
           # Bind OPA only to localhost to ensure we avoid unecessary
           # exposure of the OPA API outside of the pod. We can still
           # reach the diagnostic endpoints from the config option below.
-          "--addr=:8181",
+          #"--addr=localhost:8181",
           # Expose /health and /metrics endpoints on a separate port,
           # allowing tools like Prometheus to scrape them without having
           # access to other OPA endpoints.

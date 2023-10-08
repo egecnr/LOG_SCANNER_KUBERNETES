@@ -14,7 +14,7 @@ attempts_limit_passed {
 }
 
 attempts_limit_not_passed {
-    input.number_of_attempts < 5
+    input.number_of_attempts <5
 }
 
 alert[msg] {
@@ -23,7 +23,7 @@ alert[msg] {
     msg = sprintf(alert_message, [input.userhost, input.dbusername, input.event_timestamp, input.number_of_attempts])
 }
 
-minor_threat_message = "%s has tried to access %s %d times. This action still poses a minor threat since it is less than 5 times in the last five minutes. More attempts will lead to an alert in the future."
+minor_threat_message = "INFORMATION %s has tried to access %s %d times. This action still poses a minor threat since it is less than 5 times in the last five minutes. More attempts will lead to an alert in the future."
 
 alert[msg] {
     allow_inspection
