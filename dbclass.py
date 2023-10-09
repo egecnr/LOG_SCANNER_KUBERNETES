@@ -1,5 +1,5 @@
-import cx_Oracle
-#import oracledb
+#import cx_Oracle
+import oracledb
 from datetime import datetime, timedelta
 import pytz
 from zoneinfo import ZoneInfo
@@ -26,11 +26,11 @@ class DbConnection:
 
 
     def connectDB(self):
-            self.connectionDB = cx_Oracle.connect(user= self.username, password= self.password, dsn=self.dsnInformation ,encoding="UTF-8")
-            #self.connectionDB = oracledb.connect(user= self.username, password= self.password, dsn=self.dsnInformation ,encoding="UTF-8")
+            #self.connectionDB = cx_Oracle.connect(user= self.username, password= self.password, dsn=self.dsnInformation ,encoding="UTF-8")
+            self.connectionDB = oracledb.connect(user= self.username, password= self.password, dsn=self.dsnInformation ,encoding="UTF-8")
             self.setLatestTime()
             self.cursor = self.connectionDB.cursor()
-            self.opaClient= OpaClient()
+            self.opaClient= OpaClient("10.42.0.215",8181,"v1")
             print(self.opaClient.check_connection())
             
 
@@ -40,11 +40,14 @@ class DbConnection:
          cursor = self.connectionDB.cursor()
          print(self.lastChecked)
          query = """SELECT to_char(event_timestamp,'dd.mm.yyyy hh24:mi:ss') event_timestamp, sessionid, dbusername, action_name, return_code, unified_audit_policies, USERHOST 
-         FROM unified_audit_trail WHERE event_timestamp > TO_DATE('"""+  str(self.lastChecked) +"""','DD.MM.YY HH24:MI:SS') 
+         FROM unified_audit_trail WHERE event_timestamp >= TO_DATE('"""+  str(self.lastChecked) +"""','DD.MM.YY HH24:MI:SS') 
          AND unified_audit_policies='ORA_LOGON_FAILURES'  ORDER BY event_timestamp"""
+         
            # "SELECT to_char(event_timestamp,'dd.mm.yy hh24:mi:ss') event_timestamp, sessionid, dbusername, action_name, return_code, unified_audit_policies FROM unified_audit_trail WHERE event_timestamp > TO_DATE('13.07.2023 13:21:03','DD.MM.YY HH24:MI:SS') AND UNIFIED_AUDIT_POLICIES = 'SYSTEM_ALL_POLICIES' OR UNIFIED_AUDIT_POLICIES ='ORA_LOGON_FAILURES' ORDER BY event_timestamp
          cursor.execute(query)
+         print(query)
          values = cursor.fetchall()
+         print(len(values))
          self.setLatestTime()
          print(self.lastChecked)
          return self.filterLogonFailures(values)
@@ -66,6 +69,7 @@ class DbConnection:
               AND event_timestamp > TO_DATE('"""+  str(formatted_updated_time) +"""','DD.MM.YY HH24:MI:SS') 
               AND  UNIFIED_AUDIT_POLICIES ='ORA_LOGON_FAILURES' AND USERHOST= '"""+  str(userhost) +"""' 
               AND DBUSERNAME= '"""+  str(dbusername) +"""'ORDER BY event_timestamp"""
+              
               self.cursor.execute(query)
               print("We also arrived here too")
               number_of_attempts=self.cursor.fetchone()

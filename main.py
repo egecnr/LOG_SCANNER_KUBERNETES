@@ -7,7 +7,7 @@ app.connection=""
 
 @app.get("/api")
 async def root():
-    app.connection= DbConnection("system","root","10.42.0.177:1521/ORCLCDB")
+    app.connection= DbConnection("system","root","10.42.0.207:1521/ORCLCDB")
     print('Connected to Db')
     return "Welcome to the Dam demo!!"
 
